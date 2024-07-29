@@ -2,6 +2,7 @@ package routes
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -9,6 +10,8 @@ import (
 	"github.com/markmumba/project-tracker/custommiddleware"
 	"github.com/markmumba/project-tracker/services"
 )
+var vercelFrontend = os.Getenv("VERCEL_FRONTEND")
+var railwayFrontend = os.Getenv("RAILWAY_FRONTEND")
 
 func SetupRouter(
 	userService *services.UserService,
@@ -24,7 +27,7 @@ func SetupRouter(
 	}))
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowOrigins:     []string{"http://localhost:3000",vercelFrontend,railwayFrontend},
 		AllowMethods:     []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
 		AllowCredentials: true,
 	}))
