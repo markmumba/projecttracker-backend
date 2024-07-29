@@ -42,5 +42,3 @@ func ConnectDB() {
 	}
 	log.Println("Connection established successfully")
 }
-
-postgresql://postgres:KLLqQMWrzXjRSMJMMzyraqzUaAiJgFly@monorail.proxy.rlwy.net:32966/railway
