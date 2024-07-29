@@ -26,9 +26,7 @@ func ConnectDB() {
 	dbName := os.Getenv("PGDATABASE")
 
 	// Print out the values for debugging (exclude password)
-	fmt.Printf("PGHOST: %s\nPGPORT: %s\nPGUSER: %s\nPGDATABASE: %s\n",
-		dbHost, dbPort, dbUser, dbName)
-
+	
 	if dbHost == "" || dbPort == "" || dbUser == "" || dbPassword == "" || dbName == "" {
 		log.Fatal("Database connection information is incomplete")
 	}
@@ -44,3 +42,5 @@ func ConnectDB() {
 	}
 	log.Println("Connection established successfully")
 }
+
+postgresql://postgres:KLLqQMWrzXjRSMJMMzyraqzUaAiJgFly@monorail.proxy.rlwy.net:32966/railway
