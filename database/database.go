@@ -25,6 +25,14 @@ func ConnectDB() {
 	dbPassword := os.Getenv("PGPASSWORD")
 	dbName := os.Getenv("PGDATABASE")
 
+	// Print out the values for debugging (exclude password)
+	fmt.Printf("PGHOST: %s\nPGPORT: %s\nPGUSER: %s\nPGDATABASE: %s\n",
+		dbHost, dbPort, dbUser, dbName)
+
+	if dbHost == "" || dbPort == "" || dbUser == "" || dbPassword == "" || dbName == "" {
+		log.Fatal("Database connection information is incomplete")
+	}
+
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai",
 		dbHost, dbUser, dbPassword, dbName, dbPort)
 	if dsn == "" {
