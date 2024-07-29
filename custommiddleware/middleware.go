@@ -1,6 +1,7 @@
 package custommiddleware
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
@@ -16,7 +17,9 @@ func Authentication(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 
 		cookie, err := c.Cookie("token")
+		fmt.Println(cookie)
 		if err != nil {
+			fmt.Println(err.Error())
 			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "unauthorized"})
 		}
 
