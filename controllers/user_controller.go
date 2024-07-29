@@ -38,9 +38,12 @@ func (uc *UserController) Login(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, err.Error())
 	}
 	c.SetCookie(&http.Cookie{
-		Name:    "token",
-		Value:   token,
-		Expires: time.Now().Add(time.Hour * 72),
+		Name:     "token",
+		Value:    token,
+		Expires:  time.Now().Add(time.Hour * 72),
+		Path:     "/",
+		Secure:   true,
+		SameSite: http.SameSiteNoneMode,
 	})
 
 	return c.JSON(http.StatusOK, echo.Map{
@@ -61,20 +64,20 @@ func (uc *UserController) Logout(c echo.Context) error {
 }
 
 func (uc *UserController) CreateUser(c echo.Context) error {
-    var user models.User
-    if err := c.Bind(&user); err != nil {
-        return c.JSON(http.StatusBadRequest, err.Error())
-    }
+	var user models.User
+	if err := c.Bind(&user); err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
 
-    err := uc.UserService.CreateUser(&user)
-    if err != nil {
-        if strings.Contains(err.Error(), "already exists") {
-            return c.JSON(http.StatusConflict, map[string]string{"message": err.Error()})
-        }
-        return c.JSON(http.StatusInternalServerError, err.Error())
-    }
+	err := uc.UserService.CreateUser(&user)
+	if err != nil {
+		if strings.Contains(err.Error(), "already exists") {
+			return c.JSON(http.StatusConflict, map[string]string{"message": err.Error()})
+		}
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
 
-    return c.JSON(http.StatusCreated, models.UserToDTO(&user))
+	return c.JSON(http.StatusCreated, models.UserToDTO(&user))
 }
 
 func (uc *UserController) GetUser(c echo.Context) error {
