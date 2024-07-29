@@ -10,6 +10,7 @@ import (
 	"github.com/markmumba/project-tracker/custommiddleware"
 	"github.com/markmumba/project-tracker/services"
 )
+
 var vercelFrontend = os.Getenv("VERCEL_FRONTEND")
 var railwayFrontend = os.Getenv("RAILWAY_FRONTEND")
 
@@ -23,13 +24,15 @@ func SetupRouter(
 	e := echo.New()
 
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-		Format: "method=${method}, uri=${uri}, status=${status}\n",
-	}))
+    Format: "time=${time_rfc3339}, method=${method}, uri=${uri}, status=${status}, error=${error}\n",
+}))
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"http://localhost:3000",vercelFrontend,railwayFrontend},
-		AllowMethods:     []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
+		AllowOrigins:     []string{"http://localhost:3000", vercelFrontend, railwayFrontend},
+		AllowMethods:     []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete, http.MethodOptions},
+		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
 		AllowCredentials: true,
+		MaxAge:           300, // Optional: cache preflight requests
 	}))
 
 	userController := controllers.NewUserController(userService)
@@ -37,12 +40,12 @@ func SetupRouter(
 	submissionController := controllers.NewSubmissionController(submissionService)
 	feedbackController := controllers.NewFeedbackController(feedbackService)
 	communicationController := controllers.NewCommunicationContoller(communicationService)
-	websocketController := controllers.NewWebsocketController(*communicationService,*projectService)
+	websocketController := controllers.NewWebsocketController(*communicationService, *projectService)
 
 	e.POST("/register", userController.CreateUser)
 	e.POST("/login", userController.Login)
 	e.GET("/logout", userController.Logout)
-	e.GET("/ws",websocketController.HandleWebSocket)
+	e.GET("/ws", websocketController.HandleWebSocket)
 
 	r := e.Group("")
 	r.Use(custommiddleware.Authentication)
