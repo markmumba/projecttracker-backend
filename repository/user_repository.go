@@ -15,26 +15,25 @@ func NewUserRepository() UserRepository {
 	return &UserRepositoryImpl{}
 }
 
-
 func (r *UserRepositoryImpl) CreateUser(user *models.User) error {
-    return database.DB.Transaction(func(tx *gorm.DB) error {
-        var existingUser models.User
-        result := tx.Where("email = ?", user.Email).First(&existingUser)
+	return database.DB.Transaction(func(tx *gorm.DB) error {
+		var existingUser models.User
+		result := tx.Where("email = ?", user.Email).First(&existingUser)
 
-        // If the user already exists, return an error
-        if result.Error == nil {
-            return fmt.Errorf("user with email %s already exists", user.Email)
-        }
+		// If the user already exists, return an error
+		if result.Error == nil {
+			return fmt.Errorf("user with email %s already exists", user.Email)
+		}
 
-        // If the error is not RecordNotFound, return the error
-        if !errors.Is(result.Error, gorm.ErrRecordNotFound) {
-            return result.Error
-        }
+		// If the error is not RecordNotFound, return the error
+		if !errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return result.Error
+		}
 
-        // Proceed with user creation if no existing user is found
-        result = tx.Create(user)
-        return result.Error
-    })
+		// Proceed with user creation if no existing user is found
+		result = tx.Create(user)
+		return result.Error
+	})
 }
 
 func (r *UserRepositoryImpl) FindByEmail(email string, user *models.User) error {
@@ -73,17 +72,23 @@ func (r *UserRepositoryImpl) GetLecturers() ([]models.User, error) {
 	result := database.DB.Preload("Role").Where("role_id = 1").Find(&lecturers)
 	return lecturers, result.Error
 }
-
 func (r *UserRepositoryImpl) UpdateUser(id uint, user *models.User) error {
 	var existingUser models.User
-	result:= database.DB.First(&existingUser,id)
+	result := database.DB.First(&existingUser, id)
 	if result.Error != nil {
 		return result.Error
 	}
 
-	existingUser.Email = user.Email
-	existingUser.Name = user.Name
-	existingUser.Password = user.Password
+	// Update fields only if they are provided (non-zero values)
+	if user.Email != "" {
+		existingUser.Email = user.Email
+	}
+	if user.Name != "" {
+		existingUser.Name = user.Name
+	}
+	if user.Password != "" {
+		existingUser.Password = user.Password
+	}
 
 	result = database.DB.Save(&existingUser)
 	return result.Error

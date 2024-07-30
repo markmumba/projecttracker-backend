@@ -1,17 +1,22 @@
 package database
 
 import (
-	// "github.com/joho/godotenv"
-	"log"
-	"os"
-
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"log"
+	"os"
 )
 
 var DB *gorm.DB
+
 func ConnectDB() {
 	var err error
+
+	err = godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
 	// Get the DATABASE_URL from environment variable
 	databaseURL := os.Getenv("DATABASE_URL")
