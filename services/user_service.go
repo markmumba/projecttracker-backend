@@ -62,6 +62,12 @@ func (u *UserService) GetLecturers() ([]models.User, error) {
 }
 
 func (u *UserService) UpdateUser(id uint, user *models.User) error {
+
+	hashedPassword, err := auth.HashPassword(user.Password)
+	if err != nil {
+		return err
+	}
+	user.Password = hashedPassword
 	return u.UserRepository.UpdateUser(id, user)
 }
 
