@@ -13,9 +13,14 @@ var DB *gorm.DB
 func ConnectDB() {
 	var err error
 
-	err = godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	// Check if we're in a production environment
+	if os.Getenv("GO_ENV") != "production" {
+		// Load .env file only in non-production environments
+		err = godotenv.Load()
+		if err != nil {
+			log.Println("Warning: Error loading .env file:", err)
+			// Don't fatal here, as the environment variables might be set another way
+		}
 	}
 
 	// Get the DATABASE_URL from environment variable
@@ -31,5 +36,5 @@ func ConnectDB() {
 		log.Fatal("Error connecting to database: ", err)
 	}
 
-	log.Println("Connection established successfully")
+	log.Println("Database connection established successfully")
 }
