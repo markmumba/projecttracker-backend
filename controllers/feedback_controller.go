@@ -110,7 +110,7 @@ func (fc *FeedbackController) GetFeedbackForSubmission(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, "No feedback found for this submission")
 	}
 
-	return c.JSON(http.StatusOK, feedback)
+	return c.JSON(http.StatusOK, models.FeedbackToDTO(feedback))
 }
 
 func (fc *FeedbackController) DeleteFeedback(c echo.Context) error {
