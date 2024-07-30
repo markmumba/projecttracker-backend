@@ -75,7 +75,17 @@ func (r *UserRepositoryImpl) GetLecturers() ([]models.User, error) {
 }
 
 func (r *UserRepositoryImpl) UpdateUser(id uint, user *models.User) error {
-	result := database.DB.Save(user).Where("id = ?", id)
+	var existingUser models.User
+	result:= database.DB.First(&existingUser,id)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	existingUser.Email = user.Email
+	existingUser.Name = user.Name
+	existingUser.Password = user.Password
+
+	result = database.DB.Save(&existingUser)
 	return result.Error
 }
 
