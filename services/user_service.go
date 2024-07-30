@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"time"
 
 	"github.com/markmumba/project-tracker/auth"
 	"github.com/markmumba/project-tracker/models"
@@ -10,11 +11,13 @@ import (
 
 type UserService struct {
 	UserRepository repository.UserRepository
+	RefreshRepository repository.RefreshTokenRepository
 }
 
-func NewUserService(userRepo repository.UserRepository) *UserService {
+func NewUserService(userRepo repository.UserRepository,refreshRepo repository.RefreshTokenRepository) *UserService {
 	return &UserService{
 		UserRepository: userRepo,
+		RefreshRepository: refreshRepo,
 	}
 }
 
@@ -27,22 +30,54 @@ func (u *UserService) CreateUser(user *models.User) error {
 	return u.UserRepository.CreateUser(user)
 }
 
-func (u *UserService) LoginUser(email, password string) (string, error) {
-	var user models.User
-	err := u.UserRepository.FindByEmail(email, &user)
-	if err != nil {
-		return "", err
-	}
+func (u *UserService) LoginUser(email, password string) (string, string, error) {
+    var user models.User
+    err := u.UserRepository.FindByEmail(email, &user)
+    if err != nil {
+        return "", "", err
+    }
 
-	if !auth.CheckPasswordHash(password, user.Password) {
-		return "", errors.New("invalid credentials")
-	}
+    if !auth.CheckPasswordHash(password, user.Password) {
+        return "", "", errors.New("invalid credentials")
+    }
 
-	token, err := auth.GenerateJWT(&user)
-	if err != nil {
-		return "", err
-	}
-	return token, nil
+    accessToken, err := auth.GenerateAccessToken(&user)
+    if err != nil {
+        return "", "", err
+    }
+
+    refreshToken, err := auth.GenerateRefreshToken(&user)
+    if err != nil {
+        return "", "", err
+    }
+
+    // Store refresh token in the database
+    err = u.RefreshRepository.Create(&models.RefreshToken{
+        Token:     refreshToken,
+        UserID:    user.ID,
+        ExpiresAt: time.Now().Add(time.Hour * 24 * 7),
+    })
+    if err != nil {
+        return "", "", err
+    }
+
+    return accessToken, refreshToken, nil
+}
+
+func (u *UserService) FindRefreshToken(token string, refreshToken *models.RefreshToken) error {
+    return u.RefreshRepository.FindRefreshToken(token, refreshToken)
+}
+
+func (u *UserService) FindUserByID(userID uint, user *models.User) error {
+    return u.FindUserByID(userID, user)
+}
+
+func (u *UserService) SaveRefreshToken(token *models.RefreshToken) error {
+    return u.RefreshRepository.SaveRefreshToken(token)
+}
+
+func (u *UserService) DeleteRefreshToken(token string) error {
+    return u.RefreshRepository.DeleteRefreshToken(token)
 }
 
 func (u *UserService) GetUser(id uint) (*models.User, error) {

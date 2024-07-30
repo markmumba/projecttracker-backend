@@ -12,7 +12,11 @@ import (
 
 // TODO : change to uint and see what happens
 
-var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
+
+var (
+	accessTokenSecret  = []byte(os.Getenv("ACCESS_TOKEN_SECRET"))
+	refreshTokenSecret = []byte(os.Getenv("REFRESH_TOKEN_SECRET"))
+)
 
 type JwtCustomClaims struct {
 	UserId uint `json:"id"`
@@ -29,21 +33,56 @@ func CheckPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
-func GenerateJWT(user *models.User) (string, error) {
+func GenerateAccessToken(user *models.User) (string, error) {
 	stringId := strconv.Itoa(int(user.ID))
 
 	claims := &JwtCustomClaims{
 		user.ID,
 		jwt.RegisteredClaims{
 			Issuer:    stringId,
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 72)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)), // 15 minutes
 		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(jwtSecret)
-	if err != nil {
-		return "", err
+	return token.SignedString(accessTokenSecret)
+}
+
+func GenerateRefreshToken(user *models.User) (string, error) {
+	stringId := strconv.Itoa(int(user.ID))
+
+	claims := &JwtCustomClaims{
+		user.ID,
+		jwt.RegisteredClaims{
+			Issuer:    stringId,
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 7)), // 7 days
+		},
 	}
-	return tokenString, nil
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(refreshTokenSecret)
+}
+
+func ValidateAccessToken(tokenString string) (*JwtCustomClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &JwtCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return accessTokenSecret, nil
+	})
+
+	if claims, ok := token.Claims.(*JwtCustomClaims); ok && token.Valid {
+		return claims, nil
+	} else {
+		return nil, err
+	}
+}
+
+func ValidateRefreshToken(tokenString string) (*JwtCustomClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &JwtCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return refreshTokenSecret, nil
+	})
+
+	if claims, ok := token.Claims.(*JwtCustomClaims); ok && token.Valid {
+		return claims, nil
+	} else {
+		return nil, err
+	}
 }

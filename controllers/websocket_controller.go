@@ -4,18 +4,19 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 	"github.com/markmumba/project-tracker/auth"
-	"github.com/markmumba/project-tracker/custommiddleware"
 	"github.com/markmumba/project-tracker/models"
 	"github.com/markmumba/project-tracker/services"
 )
 
 var (
+	accessTokenSecret  = []byte(os.Getenv("ACCESS_TOKEN_SECRET"))
 	upgrader = websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
@@ -47,7 +48,7 @@ func (wsc *WebsocketController) HandleWebSocket(c echo.Context) error {
 
 	// Parse and validate JWT token
 	token, err := jwt.ParseWithClaims(cookie.Value, &auth.JwtCustomClaims{}, func(t *jwt.Token) (interface{}, error) {
-		return custommiddleware.JwtSecret, nil
+		return accessTokenSecret, nil
 	})
 	if err != nil {
 		log.Println("Parsing the cookie was crazy man ")
