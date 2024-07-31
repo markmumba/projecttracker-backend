@@ -11,6 +11,7 @@ import (
 )
 
 // TODO : change to uint and see what happens
+// TODO : update not working password is wrong
 
 
 var (
