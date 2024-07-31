@@ -2,24 +2,32 @@ package custommiddleware
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/markmumba/project-tracker/auth"
 )
 
-
 func Authentication(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		cookie, err := c.Cookie("access_token")
-		if err != nil {
-			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "unauthorized"})
+		authHeader := c.Request().Header.Get("Authorization")
+		if authHeader == "" {
+			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "missing authorization header"})
 		}
 
-		claims, err := auth.ValidateAccessToken(cookie.Value)
-		if err != nil {
-			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "unauthorized"})
+		// The Authorization header should be in the format: "Bearer <token>"
+		parts := strings.Split(authHeader, " ")
+		if len(parts) != 2 || parts[0] != "Bearer" {
+			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "invalid authorization header format"})
 		}
 
+		tokenString := parts[1]
+		claims, err := auth.ValidateAccessToken(tokenString)
+		if err != nil {
+			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "invalid or expired access token"})
+		}
+
+		// Set the user ID in the context for use in subsequent handlers
 		c.Set("userId", claims.UserId)
 
 		return next(c)

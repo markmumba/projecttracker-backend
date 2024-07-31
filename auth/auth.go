@@ -11,8 +11,7 @@ import (
 )
 
 // TODO : change to uint and see what happens
-// TODO : update not working password is wrong
-
+// TODO : update not working password is wor
 
 var (
 	accessTokenSecret  = []byte(os.Getenv("ACCESS_TOKEN_SECRET"))

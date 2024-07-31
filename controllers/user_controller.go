@@ -22,44 +22,33 @@ func NewUserController(userService *services.UserService) *UserController {
 	}
 }
 
-// TODO : Get all the lecturers that is get all users where role id is 1
-
 func (uc *UserController) Login(c echo.Context) error {
 	var credentials struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
-
 	if err := c.Bind(&credentials); err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
-
 	accessToken, refreshToken, err := uc.UserService.LoginUser(credentials.Email, credentials.Password)
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, err.Error())
 	}
 
-	c.SetCookie(&http.Cookie{
-		Name:     "access_token",
-		Value:    accessToken,
-		Expires:  time.Now().Add(15 * time.Minute),
-		Path:     "/",
-		Secure:   true,
-		SameSite: http.SameSiteNoneMode,
-	})
-
+	// Set refresh token as HTTP-only cookie
 	c.SetCookie(&http.Cookie{
 		Name:     "refresh_token",
 		Value:    refreshToken,
+		HttpOnly: true,
 		Expires:  time.Now().Add(7 * 24 * time.Hour),
 		Path:     "/",
 		Secure:   true,
-		SameSite: http.SameSiteNoneMode,
+		SameSite: http.SameSiteStrictMode,
 	})
 
+	// Return access token in the response body
 	return c.JSON(http.StatusOK, echo.Map{
-		"access_token":  accessToken,
-		"refresh_token": refreshToken,
+		"access_token": accessToken,
 	})
 }
 
@@ -69,18 +58,13 @@ func (uc *UserController) Refresh(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, "Missing refresh token")
 	}
 
-	var refreshTokenModel models.RefreshToken
-	err = uc.UserService.FindRefreshToken(refreshToken.Value, &refreshTokenModel)
+	claims, err := auth.ValidateRefreshToken(refreshToken.Value)
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, "Invalid refresh token")
 	}
 
-	if refreshTokenModel.ExpiresAt.Before(time.Now()) {
-		return c.JSON(http.StatusUnauthorized, "Refresh token expired")
-	}
-
 	var user models.User
-	err = uc.UserService.FindUserByID(refreshTokenModel.UserID, &user)
+	err = uc.UserService.FindUserByID(claims.UserId, &user)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, "User not found")
 	}
@@ -95,34 +79,26 @@ func (uc *UserController) Refresh(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, "Could not generate refresh token")
 	}
 
-	refreshTokenModel.Token = newRefreshToken
-	refreshTokenModel.ExpiresAt = time.Now().Add(7 * 24 * time.Hour)
-	err = uc.UserService.SaveRefreshToken(&refreshTokenModel)
+	// Update refresh token in the database
+	err = uc.UserService.UpdateRefreshToken(refreshToken.Value, newRefreshToken)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, "Could not save refresh token")
+		return c.JSON(http.StatusInternalServerError, "Could not update refresh token")
 	}
 
-	c.SetCookie(&http.Cookie{
-		Name:     "access_token",
-		Value:    accessToken,
-		Expires:  time.Now().Add(15 * time.Minute),
-		Path:     "/",
-		Secure:   true,
-		SameSite: http.SameSiteNoneMode,
-	})
-
+	// Set new refresh token as HTTP-only cookie
 	c.SetCookie(&http.Cookie{
 		Name:     "refresh_token",
 		Value:    newRefreshToken,
+		HttpOnly: true,
 		Expires:  time.Now().Add(7 * 24 * time.Hour),
 		Path:     "/",
 		Secure:   true,
-		SameSite: http.SameSiteNoneMode,
+		SameSite: http.SameSiteStrictMode,
 	})
 
+	// Return new access token in the response body
 	return c.JSON(http.StatusOK, echo.Map{
-		"access_token":  accessToken,
-		"refresh_token": newRefreshToken,
+		"access_token": accessToken,
 	})
 }
 
@@ -137,27 +113,21 @@ func (uc *UserController) Logout(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, "Could not delete refresh token")
 	}
 
-	// Clear the access and refresh tokens from cookies
-	c.SetCookie(&http.Cookie{
-		Name:     "access_token",
-		Value:    "",
-		Expires:  time.Now().Add(-time.Hour),
-		Path:     "/",
-		Secure:   true,
-		SameSite: http.SameSiteNoneMode,
-	})
-
+	// Clear the refresh token cookie
 	c.SetCookie(&http.Cookie{
 		Name:     "refresh_token",
 		Value:    "",
+		HttpOnly: true,
 		Expires:  time.Now().Add(-time.Hour),
 		Path:     "/",
 		Secure:   true,
-		SameSite: http.SameSiteNoneMode,
+		SameSite: http.SameSiteStrictMode,
 	})
 
 	return c.JSON(http.StatusOK, "Logged out successfully")
 }
+
+
 
 
 

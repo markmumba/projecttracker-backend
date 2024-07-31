@@ -72,6 +72,10 @@ func (u *UserService) FindUserByID(userID uint, user *models.User) error {
     return u.FindUserByID(userID, user)
 }
 
+func (u *UserService) UpdateRefreshToken(oldToken, newToken string) error {
+	return u.RefreshRepository.UpdateToken(oldToken, newToken)
+}
+
 func (u *UserService) SaveRefreshToken(token *models.RefreshToken) error {
     return u.RefreshRepository.SaveRefreshToken(token)
 }

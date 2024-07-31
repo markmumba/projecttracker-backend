@@ -22,6 +22,9 @@ func (r *RefreshTokenRepositoryImpl) SaveRefreshToken(token *models.RefreshToken
     return database.DB.Save(token).Error
 }
 
+func (r *RefreshTokenRepositoryImpl) UpdateToken(oldToken, newToken string) error {
+	return database.DB.Model(&models.RefreshToken{}).Where("token = ?", oldToken).Update("token", newToken).Error
+}
 func (r *RefreshTokenRepositoryImpl) FindRefreshToken(token string, refreshToken *models.RefreshToken) error {
     return database.DB.Where("token = ?", token).First(refreshToken).Error
 }
