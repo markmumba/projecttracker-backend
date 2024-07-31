@@ -72,6 +72,7 @@ func (r *UserRepositoryImpl) GetLecturers() ([]models.User, error) {
 	result := database.DB.Preload("Role").Where("role_id = 1").Find(&lecturers)
 	return lecturers, result.Error
 }
+
 func (r *UserRepositoryImpl) UpdateUser(id uint, user *models.User) error {
 	var existingUser models.User
 	result := database.DB.First(&existingUser, id)

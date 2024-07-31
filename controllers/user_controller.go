@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -130,6 +131,8 @@ func (uc *UserController) UpdateUser(c echo.Context) error {
 	if err := c.Bind(&updateUser); err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
+	fmt.Printf("this is the data from the user %v",updateUser)
+
 	if err := uc.UserService.UpdateUser(userID, &updateUser); err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}

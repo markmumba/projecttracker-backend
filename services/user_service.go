@@ -61,15 +61,30 @@ func (u *UserService) GetLecturers() ([]models.User, error) {
 	return u.UserRepository.GetLecturers()
 }
 
-func (u *UserService) UpdateUser(id uint, user *models.User) error {
 
-	hashedPassword, err := auth.HashPassword(user.Password)
+
+func (u *UserService) UpdateUser(id uint, user *models.User) error {
+	// Fetch the existing user first
+	existingUser, err := u.UserRepository.GetUser(id)
 	if err != nil {
 		return err
 	}
-	user.Password = hashedPassword
+
+	// Only hash the password if it's provided in the update
+	if user.Password != "" {
+		hashedPassword, err := auth.HashPassword(user.Password)
+		if err != nil {
+			return err
+		}
+		user.Password = hashedPassword
+	} else {
+		// If no new password is provided, use the existing hashed password
+		user.Password = existingUser.Password
+	}
+
 	return u.UserRepository.UpdateUser(id, user)
 }
+
 
 func (u *UserService) UpdateUserProfileImage(id uint, profileImage string) error {
 	return u.UserRepository.UpdateUserProfileImage(id, profileImage)
