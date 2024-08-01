@@ -32,6 +32,7 @@ func main() {
 		&models.Submission{},
 		&models.Feedback{},
 		&models.CommunicationHistory{},
+		&models.RefreshToken{},
 	)
 
 	refreshRepository:= repository.NewRefreshTokenRepository()
