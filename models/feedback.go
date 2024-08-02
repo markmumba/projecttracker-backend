@@ -1,7 +1,9 @@
 package models
 
+import "github.com/google/uuid"
+
 type Feedback struct {
-	ID           uint   `gorm:"primaryKey;autoIncrement"`
+	ID           uuid.UUID   `gorm:"primaryKey;autoIncrement"`
 	Comment      string     `gorm:"not null" json:"comment"`
 	FeedbackDate string     `json:"feedback_date"`
 	SubmissionID uint       `gorm:"not null" json:"submission_id"`
@@ -11,7 +13,7 @@ type Feedback struct {
 }
 
 type FeedbackDTO struct {
-	ID           uint          `json:"id"`
+	ID           uuid.UUID      `json:"id"`
 	Comment      string        `json:"comment"`
 	FeedbackDate string        `json:"feedback_date"`
 	Submission   SubmissionDTO `json:"submission"`

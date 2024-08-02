@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/markmumba/project-tracker/database"
 	"github.com/markmumba/project-tracker/models"
 	"gorm.io/gorm"
@@ -20,17 +21,15 @@ func (r *UserRepositoryImpl) CreateUser(user *models.User) error {
 		var existingUser models.User
 		result := tx.Where("email = ?", user.Email).First(&existingUser)
 
-		// If the user already exists, return an error
 		if result.Error == nil {
 			return fmt.Errorf("user with email %s already exists", user.Email)
 		}
 
-		// If the error is not RecordNotFound, return the error
 		if !errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return result.Error
 		}
-
-		// Proceed with user creation if no existing user is found
+		
+		user.ID = uuid.New()
 		result = tx.Create(user)
 		return result.Error
 	})
@@ -80,7 +79,6 @@ func (r *UserRepositoryImpl) UpdateUser(id uint, user *models.User) error {
 		return result.Error
 	}
 
-	// Update fields only if they are provided (non-zero values)
 	if user.Email != "" {
 		existingUser.Email = user.Email
 	}

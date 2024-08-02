@@ -2,10 +2,10 @@ package auth
 
 import (
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"github.com/markmumba/project-tracker/models"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -19,7 +19,7 @@ var (
 )
 
 type JwtCustomClaims struct {
-	UserId uint `json:"id"`
+	UserId uuid.UUID `json:"id"`
 	jwt.RegisteredClaims
 }
 
@@ -34,7 +34,7 @@ func CheckPasswordHash(password, hash string) bool {
 }
 
 func GenerateAccessToken(user *models.User) (string, error) {
-	stringId := strconv.Itoa(int(user.ID))
+	stringId := user.ID.String() 
 
 	claims := &JwtCustomClaims{
 		user.ID,
@@ -49,7 +49,7 @@ func GenerateAccessToken(user *models.User) (string, error) {
 }
 
 func GenerateRefreshToken(user *models.User) (string, error) {
-	stringId := strconv.Itoa(int(user.ID))
+	stringId := user.ID.String() 
 
 	claims := &JwtCustomClaims{
 		user.ID,

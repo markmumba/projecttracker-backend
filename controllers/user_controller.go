@@ -132,6 +132,7 @@ func (uc *UserController) Logout(c echo.Context) error {
 
 
 
+
 func (uc *UserController) CreateUser(c echo.Context) error {
 	var user models.User
 	if err := c.Bind(&user); err != nil {

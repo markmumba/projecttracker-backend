@@ -1,8 +1,10 @@
 package models
 
+import "github.com/google/uuid"
+
 type Project struct {
 	
-	ID           uint   `gorm:"primaryKey;autoIncrement"`
+	ID           uuid.UUID   `gorm:"primaryKey;autoIncrement"`
 	Title       string `gorm:"not null" json:"title"`
 	Description string 	`gorm:"not null" json:"description"`
 	StartDate   string  `json:"start_date"`
@@ -14,7 +16,7 @@ type Project struct {
 }
 
 type ProjectDTO struct {
-	ID          uint    `json:"id"`
+	ID          uuid.UUID   `json:"id"`
 	Title       string  `json:"title"`
 	Description string  `json:"description"`
 	StartDate   string  `json:"start_date"`
