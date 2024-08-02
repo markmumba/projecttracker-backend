@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/markmumba/project-tracker/auth"
 	"github.com/markmumba/project-tracker/helpers"
 	"github.com/markmumba/project-tracker/models"
 	"github.com/markmumba/project-tracker/services"
@@ -22,47 +23,114 @@ func NewUserController(userService *services.UserService) *UserController {
 	}
 }
 
-// TODO : Get all the lecturers that is get all users where role id is 1
-
 func (uc *UserController) Login(c echo.Context) error {
 	var credentials struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
-
 	if err := c.Bind(&credentials); err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
-
-	token, err := uc.UserService.LoginUser(credentials.Email, credentials.Password)
+	accessToken, refreshToken, err := uc.UserService.LoginUser(credentials.Email, credentials.Password)
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, err.Error())
 	}
+
+	// Set refresh token as HTTP-only cookie
 	c.SetCookie(&http.Cookie{
-		Name:     "token",
-		Value:    token,
-		Expires:  time.Now().Add(time.Hour * 72),
+		Name:     "refresh_token",
+		Value:    refreshToken,
+		HttpOnly: true,
+		Expires:  time.Now().Add(7 * 24 * time.Hour),
 		Path:     "/",
 		Secure:   true,
-		SameSite: http.SameSiteNoneMode,
+		SameSite: http.SameSiteStrictMode,
 	})
 
+	// Return access token in the response body
 	return c.JSON(http.StatusOK, echo.Map{
-		"token": token,
+		"access_token": accessToken,
 	})
 }
-func (uc *UserController) Logout(c echo.Context) error {
-	cookie := &http.Cookie{
-		Name:    "token",
-		Value:   "",
-		Expires: time.Now().Add(-time.Hour),
+
+func (uc *UserController) Refresh(c echo.Context) error {
+	refreshToken, err := c.Cookie("refresh_token")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, "Missing refresh token")
 	}
 
-	c.SetCookie(cookie)
+	claims, err := auth.ValidateRefreshToken(refreshToken.Value)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, "Invalid refresh token")
+	}
+
+	var user models.User
+	err = uc.UserService.FindUserByID(claims.UserId, &user)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "User not found")
+	}
+
+	accessToken, err := auth.GenerateAccessToken(&user)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "Could not generate access token")
+	}
+
+	newRefreshToken, err := auth.GenerateRefreshToken(&user)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "Could not generate refresh token")
+	}
+
+	// Update refresh token in the database
+	err = uc.UserService.UpdateRefreshToken(refreshToken.Value, newRefreshToken)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "Could not update refresh token")
+	}
+
+	// Set new refresh token as HTTP-only cookie
+	c.SetCookie(&http.Cookie{
+		Name:     "refresh_token",
+		Value:    newRefreshToken,
+		HttpOnly: true,
+		Expires:  time.Now().Add(7 * 24 * time.Hour),
+		Path:     "/",
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+	})
+
+	// Return new access token in the response body
 	return c.JSON(http.StatusOK, echo.Map{
-		"message": "Logout successful",
+		"access_token": accessToken,
 	})
 }
+
+func (uc *UserController) Logout(c echo.Context) error {
+	refreshToken, err := c.Cookie("refresh_token")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, "Missing refresh token")
+	}
+
+	err = uc.UserService.DeleteRefreshToken(refreshToken.Value)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "Could not delete refresh token")
+	}
+
+	// Clear the refresh token cookie
+	c.SetCookie(&http.Cookie{
+		Name:     "refresh_token",
+		Value:    "",
+		HttpOnly: true,
+		Expires:  time.Now().Add(-time.Hour),
+		Path:     "/",
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+	})
+
+	return c.JSON(http.StatusOK, "Logged out successfully")
+}
+
+
+
+
 
 func (uc *UserController) CreateUser(c echo.Context) error {
 	var user models.User

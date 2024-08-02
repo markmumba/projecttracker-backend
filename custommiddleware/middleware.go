@@ -2,37 +2,35 @@ package custommiddleware
 
 import (
 	"net/http"
-	"os"
+	"strings"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/markmumba/project-tracker/auth"
 )
 
-var JwtSecret = []byte(os.Getenv("JWT_SECRET"))
-
 func Authentication(next echo.HandlerFunc) echo.HandlerFunc {
+  return func(c echo.Context) error {
+    authHeader := c.Request().Header.Get("Authorization")
+    if authHeader == "" {
+      return c.JSON(http.StatusUnauthorized, echo.Map{"message": "missing authorization header"})
+    }
 
-	return func(c echo.Context) error {
+    // The Authorization header should be in the format: "Bearer <token>"
+    parts := strings.Split(authHeader, " ")
+    if len(parts) != 2 || parts[0] != "Bearer" {
+      return c.JSON(http.StatusUnauthorized, echo.Map{"message": "invalid authorization header format"})
+    }
 
-		cookie, err := c.Cookie("token")
-		if err != nil {
-			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "unauthorized"})
-		}
+    tokenString := parts[1]
+    claims, err := auth.ValidateAccessToken(tokenString)
+    if err != nil {
+      return c.JSON(http.StatusUnauthorized, echo.Map{"message": "invalid or expired access token"})
+    }
 
-		token, err := jwt.ParseWithClaims(cookie.Value, &auth.JwtCustomClaims{}, func(t *jwt.Token) (interface{}, error) {
-			return JwtSecret, nil
-		})
-		if err != nil {
-			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "unauthorized"})
-		}
+    // Set the user ID in the context for use in subsequent handlers
+    c.Set("userId", claims.UserId)
 
-		if claims, ok := token.Claims.(*auth.JwtCustomClaims); ok && token.Valid {
-			c.Set("userId", claims.UserId)
-	
-			return next(c)
-		}
-
-		return c.JSON(http.StatusUnauthorized, echo.Map{"message": "unauthorized"})
-	}
+    return next(c)
+  }
 }
+

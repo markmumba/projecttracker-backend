@@ -32,10 +32,13 @@ func main() {
 		&models.Submission{},
 		&models.Feedback{},
 		&models.CommunicationHistory{},
+		&models.RefreshToken{},
 	)
 
+	refreshRepository:= repository.NewRefreshTokenRepository()
+	
 	userRepository := repository.NewUserRepository()
-	userService := services.NewUserService(userRepository)
+	userService := services.NewUserService(userRepository,refreshRepository)
 
 	projectRepository := repository.NewProjectRepository()
 	projectService := services.NewProjectService(projectRepository, userRepository)
