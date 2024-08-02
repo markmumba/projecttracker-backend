@@ -24,8 +24,8 @@ func SetupRouter(
 	e := echo.New()
 
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-    Format: "time=${time_rfc3339}, method=${method}, uri=${uri}, status=${status}, error=${error}\n",
-}))
+		Format: "time=${time_rfc3339}, method=${method}, uri=${uri}, status=${status}, error=${error}\n",
+	}))
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{"http://localhost:3000", vercelFrontend, railwayFrontend},
@@ -49,6 +49,7 @@ func SetupRouter(
 
 	r := e.Group("")
 	r.Use(custommiddleware.Authentication)
+	r.GET("/refresh-token", userController.Refresh)
 
 	userGroup := r.Group("/users")
 	{
