@@ -3,7 +3,7 @@ package models
 import "github.com/google/uuid"
 
 type Submission struct {
-	ID             uuid.UUID  `gorm:"primaryKey;autoIncrement"`
+	ID             uuid.UUID  `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
 	Description    string     `gorm:"not null" json:"description"`
 	SubmissionDate string     `json:"submission_date"`
 	DocumentPath   string     `gorm:"not null" json:"document_path"`

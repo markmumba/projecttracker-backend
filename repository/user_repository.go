@@ -28,8 +28,7 @@ func (r *UserRepositoryImpl) CreateUser(user *models.User) error {
 		if !errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return result.Error
 		}
-		
-		user.ID = uuid.New()
+
 		result = tx.Create(user)
 		return result.Error
 	})
@@ -39,7 +38,7 @@ func (r *UserRepositoryImpl) FindByEmail(email string, user *models.User) error 
 	return database.DB.Where("email = ?", email).First(user).Error
 }
 
-func (r *UserRepositoryImpl) GetUser(id uint) (*models.User, error) {
+func (r *UserRepositoryImpl) GetUser(id uuid.UUID) (*models.User, error) {
 	var user models.User
 	result := database.DB.Preload("Role").First(&user, id)
 	return &user, result.Error
@@ -51,7 +50,7 @@ func (r *UserRepositoryImpl) GetAllUsers() ([]models.User, error) {
 	return users, result.Error
 }
 
-func (r *UserRepositoryImpl) GetStudentsByLecturer(lecturerID uint) ([]models.User, error) {
+func (r *UserRepositoryImpl) GetStudentsByLecturer(lecturerID uuid.UUID) ([]models.User, error) {
 	var projects []models.Project
 	err := database.DB.Preload("Student").Where("lecturer_id = ?", lecturerID).Find(&projects).Error
 	if err != nil {
@@ -72,7 +71,7 @@ func (r *UserRepositoryImpl) GetLecturers() ([]models.User, error) {
 	return lecturers, result.Error
 }
 
-func (r *UserRepositoryImpl) UpdateUser(id uint, user *models.User) error {
+func (r *UserRepositoryImpl) UpdateUser(id uuid.UUID, user *models.User) error {
 	var existingUser models.User
 	result := database.DB.First(&existingUser, id)
 	if result.Error != nil {
@@ -93,7 +92,7 @@ func (r *UserRepositoryImpl) UpdateUser(id uint, user *models.User) error {
 	return result.Error
 }
 
-func (r *UserRepositoryImpl) UpdateUserProfileImage(id uint, profileImage string) error {
+func (r *UserRepositoryImpl) UpdateUserProfileImage(id uuid.UUID, profileImage string) error {
 	err := database.DB.Model(&models.User{}).Where("id = ?", id).Update("profile_image", profileImage).Error
 	if err != nil {
 		return err
@@ -101,7 +100,7 @@ func (r *UserRepositoryImpl) UpdateUserProfileImage(id uint, profileImage string
 	return nil
 }
 
-func (r *UserRepositoryImpl) DeleteUser(id uint) error {
+func (r *UserRepositoryImpl) DeleteUser(id uuid.UUID) error {
 	var user models.User
 	result := database.DB.Delete(&user, id)
 	return result.Error

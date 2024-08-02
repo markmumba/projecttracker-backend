@@ -1,23 +1,24 @@
 package helpers
 
 import (
-    "fmt"
+	"fmt"
 
-    "github.com/labstack/echo/v4"
+	"github.com/google/uuid"
+	"github.com/labstack/echo/v4"
 )
 
-// ConvertUserID safely converts userID from interface{} to uint
-func ConvertUserID(c echo.Context, key string) (uint, error) {
+
+func ConvertUserID(c echo.Context, key string) (uuid.UUID, error) {
     userIDInterface := c.Get(key)
     switch id := userIDInterface.(type) {
-    case int:
-        if id >= 0 {
-            return uint(id), nil
+    case string:
+        // Try to parse the string as a UUID
+        userID, err := uuid.Parse(id)
+        if err != nil {
+            return uuid.Nil, fmt.Errorf("invalid UUID format: %v", err)
         }
-        return 0, fmt.Errorf("negative user ID not allowed")
-    case uint:
-        return id, nil
+        return userID, nil
     default:
-        return 0, fmt.Errorf("invalid user ID type")
+        return uuid.Nil, fmt.Errorf("invalid user ID type, expected string")
     }
 }

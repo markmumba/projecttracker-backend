@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"net/http"
-	"strconv"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/markmumba/project-tracker/helpers"
 	"github.com/markmumba/project-tracker/models"
@@ -34,11 +34,12 @@ func (sc *SubmissionController) CreateSubmission(c echo.Context) error {
 }
 
 func (sc *SubmissionController) GetSubmission(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	idParam := c.Param("id")
+	id, err := uuid.Parse(idParam)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
-	submission, err := sc.submissionService.GetSubmission(uint(id))
+	submission, err := sc.submissionService.GetSubmission(id)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, err.Error())
 	}
@@ -70,7 +71,8 @@ func (sc *SubmissionController) GetSubmissionsByLecturer(c echo.Context) error {
 }
 
 func (sc *SubmissionController) UpdateSubmission(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	idParam := c.Param("id")
+	id, err := uuid.Parse(idParam)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
@@ -79,7 +81,7 @@ func (sc *SubmissionController) UpdateSubmission(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
-	if err := sc.submissionService.UpdateSubmission(&submission, uint(id)); err != nil {
+	if err := sc.submissionService.UpdateSubmission(&submission, id); err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
@@ -87,11 +89,13 @@ func (sc *SubmissionController) UpdateSubmission(c echo.Context) error {
 }
 
 func (sc *SubmissionController) DeleteSubmission(c echo.Context) error {
-	submissionId, err := strconv.Atoi(c.Param("id"))
+
+	idParam := c.Param("id")
+	submissionId, err := uuid.Parse(idParam)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
-	err = sc.submissionService.DeleteSubmission(uint(submissionId))
+	err = sc.submissionService.DeleteSubmission(submissionId)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, err.Error())
 	}

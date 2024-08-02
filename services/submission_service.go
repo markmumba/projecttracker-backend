@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 
+	"github.com/google/uuid"
 	"github.com/markmumba/project-tracker/models"
 	"github.com/markmumba/project-tracker/repository"
 )
@@ -27,11 +28,11 @@ func (s *SubmissionService) CreateSubmission(submission *models.Submission) erro
 	return nil
 }
 
-func (s *SubmissionService) GetSubmission(id uint) (*models.Submission, error) {
+func (s *SubmissionService) GetSubmission(id uuid.UUID) (*models.Submission, error) {
 	return s.SubmissionRepository.GetSubmission(id)
 }
 
-func (s *SubmissionService) GetAllSubmissionByStudentId(studentId uint) ([]models.Submission, error) {
+func (s *SubmissionService) GetAllSubmissionByStudentId(studentId uuid.UUID) ([]models.Submission, error) {
 	user, err := s.UserRepository.GetUser(studentId)
 	if err != nil {
 		return nil, err
@@ -42,7 +43,7 @@ func (s *SubmissionService) GetAllSubmissionByStudentId(studentId uint) ([]model
 	return s.SubmissionRepository.GetAllSubmissionByStudentId(studentId)
 }
 
-func (s *SubmissionService) GetSubmissionsByLecturer(lecturerID uint) ([]models.Submission, error) {
+func (s *SubmissionService) GetSubmissionsByLecturer(lecturerID uuid.UUID) ([]models.Submission, error) {
 	user, err := s.UserRepository.GetUser(lecturerID)
 	if err != nil {
 		return nil, err
@@ -53,11 +54,11 @@ func (s *SubmissionService) GetSubmissionsByLecturer(lecturerID uint) ([]models.
 	return s.SubmissionRepository.GetSubmissionsByLecturer(lecturerID)
 }
 
-func (s *SubmissionService) UpdateSubmission(submission *models.Submission, id uint) error {
+func (s *SubmissionService) UpdateSubmission(submission *models.Submission, id uuid.UUID) error {
 	return s.SubmissionRepository.UpdateSubmission(submission, id)
 }
 
-func (s *SubmissionService) DeleteSubmission(id uint) error {
+func (s *SubmissionService) DeleteSubmission(id uuid.UUID) error {
 	return s.SubmissionRepository.DeleteSubmission(id)
 }
 

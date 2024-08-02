@@ -3,17 +3,17 @@ package models
 import "github.com/google/uuid"
 
 type Feedback struct {
-	ID           uuid.UUID   `gorm:"primaryKey;autoIncrement"`
+	ID             uuid.UUID  `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
 	Comment      string     `gorm:"not null" json:"comment"`
 	FeedbackDate string     `json:"feedback_date"`
-	SubmissionID uint       `gorm:"not null" json:"submission_id"`
-	LecturerID   uint       `gorm:"not null"`
+	SubmissionID uuid.UUID  `gorm:"not null" json:"submission_id"`
+	LecturerID   uuid.UUID  `gorm:"not null"`
 	Submission   Submission `gorm:"foreignKey:SubmissionID"`
 	Lecturer     User       `gorm:"foreignKey:LecturerID"`
 }
 
 type FeedbackDTO struct {
-	ID           uuid.UUID      `json:"id"`
+	ID           uuid.UUID     `json:"id"`
 	Comment      string        `json:"comment"`
 	FeedbackDate string        `json:"feedback_date"`
 	Submission   SubmissionDTO `json:"submission"`
