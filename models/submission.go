@@ -1,19 +1,21 @@
 package models
 
+import "github.com/google/uuid"
+
 type Submission struct {
-	ID             uint    `gorm:"primaryKey;autoIncrement"`
-	Description    string  `gorm:"not null" json:"description"`
-	SubmissionDate string  `json:"submission_date"`
-	DocumentPath   string  `gorm:"not null" json:"document_path"`
-	Reviewed       bool    `gorm:"default:false" json:"reviewed"`
-	ProjectID      uint    `gorm:"not null" json:"project_id"`
-	StudentID      uint    `gorm:"not null" json:"student_id"`
-	Project        Project `gorm:"foreignKey:ProjectID"`
-	Student        User    `gorm:"foreignKey:StudentID"`
+	ID             uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	Description    string    `gorm:"not null" json:"description"`
+	SubmissionDate string    `json:"submission_date"`
+	DocumentPath   string    `gorm:"not null" json:"document_path"`
+	Reviewed       bool      `gorm:"default:false" json:"reviewed"`
+	ProjectID      uuid.UUID `gorm:"type:uuid;not null" json:"project_id"`
+	StudentID      uuid.UUID `gorm:"type:uuid;not null" json:"student_id"`
+	Project        Project   `gorm:"foreignKey:ProjectID"`
+	Student        User      `gorm:"foreignKey:StudentID"`
 }
 
 type SubmissionDTO struct {
-	ID             uint       `json:"id"`
+	ID             uuid.UUID  `json:"id"`
 	Description    string     `json:"description"`
 	Reviewed       bool       `json:"reviewed"`
 	DocumentPath   string     `json:"document_path"`
@@ -24,13 +26,13 @@ type SubmissionDTO struct {
 
 func SubmissionToDTO(s *Submission) SubmissionDTO {
 	return SubmissionDTO{
-		ID:          s.ID,
-		Description: s.Description,
-		Reviewed:    s.Reviewed,
-		DocumentPath: s.DocumentPath,
+		ID:             s.ID,
+		Description:    s.Description,
+		Reviewed:       s.Reviewed,
+		DocumentPath:   s.DocumentPath,
 		SubmissionDate: s.SubmissionDate,
-		Project:     ProjectToDTO(&s.Project),
-		Student:     UserToDTO(&s.Student),
+		Project:        ProjectToDTO(&s.Project),
+		Student:        UserToDTO(&s.Student),
 	}
 }
 

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 	"github.com/markmumba/project-tracker/auth"
@@ -16,8 +17,8 @@ import (
 )
 
 var (
-	accessTokenSecret  = []byte(os.Getenv("ACCESS_TOKEN_SECRET"))
-	upgrader = websocket.Upgrader{
+	accessTokenSecret = []byte(os.Getenv("ACCESS_TOKEN_SECRET"))
+	upgrader          = websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
 		},
@@ -28,14 +29,14 @@ var (
 type WebsocketController struct {
 	CommunicationService services.CommunicationService
 	ProjectService       services.ProjectService
-	clients              map[uint]*websocket.Conn
+	clients              map[uuid.UUID]*websocket.Conn
 }
 
 func NewWebsocketController(commService services.CommunicationService, projService services.ProjectService) *WebsocketController {
 	return &WebsocketController{
 		CommunicationService: commService,
 		ProjectService:       projService,
-		clients:              make(map[uint]*websocket.Conn),
+		clients:              make(map[uuid.UUID]*websocket.Conn),
 	}
 }
 func (wsc *WebsocketController) HandleWebSocket(c echo.Context) error {

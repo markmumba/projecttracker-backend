@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 
+	"github.com/google/uuid"
 	"github.com/markmumba/project-tracker/models"
 	"github.com/markmumba/project-tracker/repository"
 )
@@ -22,11 +23,11 @@ func (p *ProjectService) CreateProject(project *models.Project) error {
 	return p.ProjectRepository.CreateProject(project)
 }
 
-func (p *ProjectService) GetProject(id uint) (*models.Project, error) {
+func (p *ProjectService) GetProject(id uuid.UUID) (*models.Project, error) {
 	return p.ProjectRepository.GetProject(id)
 }
 
-func (p *ProjectService) GetProjectsByLecturerId(lecturerId uint) ([]models.Project, error) {
+func (p *ProjectService) GetProjectsByLecturerId(lecturerId uuid.UUID) ([]models.Project, error) {
 	// Ensure the lecturer exists and is actually a lecturer
 	user, err := p.UserRepository.GetUser(lecturerId)
 	if err != nil {
@@ -42,6 +43,6 @@ func (p *ProjectService) UpdateProject(project *models.Project) error {
 	return p.ProjectRepository.UpdateProject(project)
 }
 
-func (p *ProjectService) DeleteProject(id uint) error {
+func (p *ProjectService) DeleteProject(id uuid.UUID) error {
 	return p.ProjectRepository.DeleteProject(id)
 }

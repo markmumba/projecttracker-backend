@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 
+	"github.com/google/uuid"
 	"github.com/markmumba/project-tracker/database"
 	"github.com/markmumba/project-tracker/models"
 )
@@ -24,7 +25,7 @@ func (r *SubmissionRepositoryImpl) CreateSubmission(submission *models.Submissio
 	return err
 }
 
-func (r *SubmissionRepositoryImpl) GetSubmission(id uint) (*models.Submission, error) {
+func (r *SubmissionRepositoryImpl) GetSubmission(id uuid.UUID) (*models.Submission, error) {
 	var submission models.Submission
 	result := database.DB.Preload("Project").Preload("Student").First(&submission, id)
 	if result.Error != nil {
@@ -33,7 +34,7 @@ func (r *SubmissionRepositoryImpl) GetSubmission(id uint) (*models.Submission, e
 	return &submission, nil
 }
 
-func (r *SubmissionRepositoryImpl) GetAllSubmissionByStudentId(studentId uint) ([]models.Submission, error) {
+func (r *SubmissionRepositoryImpl) GetAllSubmissionByStudentId(studentId uuid.UUID) ([]models.Submission, error) {
 	var submissions []models.Submission
 	result := database.DB.Where("student_id = ?", studentId).Find(&submissions)
 	if result.Error != nil {
@@ -41,7 +42,7 @@ func (r *SubmissionRepositoryImpl) GetAllSubmissionByStudentId(studentId uint) (
 	}
 	return submissions, nil
 }
-func (r *SubmissionRepositoryImpl) GetSubmissionsByLecturer(lecturerID uint) ([]models.Submission, error) {
+func (r *SubmissionRepositoryImpl) GetSubmissionsByLecturer(lecturerID uuid.UUID) ([]models.Submission, error) {
 	var submissions []models.Submission
 
 	result := database.DB.
@@ -57,7 +58,7 @@ func (r *SubmissionRepositoryImpl) GetSubmissionsByLecturer(lecturerID uint) ([]
 	return submissions, nil
 }
 
-func (r *SubmissionRepositoryImpl) UpdateSubmission(submission *models.Submission, id uint) error {
+func (r *SubmissionRepositoryImpl) UpdateSubmission(submission *models.Submission, id uuid.UUID) error {
 	// Find the submission by ID
 	var existingSubmission models.Submission
 	
@@ -76,7 +77,7 @@ func (r *SubmissionRepositoryImpl) UpdateSubmission(submission *models.Submissio
 	return result.Error
 }
 
-func (r *SubmissionRepositoryImpl) DeleteSubmission(id uint) error {
+func (r *SubmissionRepositoryImpl) DeleteSubmission(id uuid.UUID) error {
     result := database.DB.Delete(&models.Submission{}, id)
     if result.Error != nil {
         return result.Error

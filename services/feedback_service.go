@@ -1,7 +1,7 @@
 package services
 
 import (
-
+	"github.com/google/uuid"
 	"github.com/markmumba/project-tracker/models"
 	"github.com/markmumba/project-tracker/repository"
 )
@@ -20,15 +20,15 @@ func (s *FeedbackService) CreateFeedback(feedback *models.Feedback) error {
 	return s.FeedbackRepository.CreateFeedback(feedback)
 }
 
-func (s *FeedbackService) GetFeedback(id uint) (*models.Feedback, error) {
+func (s *FeedbackService) GetFeedback(id uuid.UUID) (*models.Feedback, error) {
 	return s.FeedbackRepository.GetFeedback(id)
 }
 
-func (s *FeedbackService) GetFeedbackByStudent(studentID uint) (*[]models.Feedback, error) {
+func (s *FeedbackService) GetFeedbackByStudent(studentID uuid.UUID) (*[]models.Feedback, error) {
 	return s.FeedbackRepository.GetFeedbackByStudent(studentID)
 }
 
-func (s *FeedbackService) GetFeedbackByLecturer (LecturerID uint ) (*[]models.Feedback, error) {
+func (s *FeedbackService) GetFeedbackByLecturer (LecturerID uuid.UUID) (*[]models.Feedback, error) {
     return s.FeedbackRepository.GetFeedbackByLecturer(LecturerID)
 }
 
@@ -37,11 +37,11 @@ func (s *FeedbackService) GetAllFeedback() ([]models.Feedback, error) {
 	return s.FeedbackRepository.GetAllFeedback()
 }
 
-func (s *FeedbackService) GetFeedbackBySubmissionId(submissionId uint) ([]models.Feedback, error) {
+func (s *FeedbackService) GetFeedbackBySubmissionId(submissionId uuid.UUID) ([]models.Feedback, error) {
 	return s.FeedbackRepository.GetFeedbackBySubmissionId(submissionId)
 }
 
-func (s *FeedbackService) UpdateFeedback(id uint, feedbackData *models.Feedback) (*models.Feedback, error) {
+func (s *FeedbackService) UpdateFeedback(id uuid.UUID, feedbackData *models.Feedback) (*models.Feedback, error) {
     existingFeedback, err := s.FeedbackRepository.GetFeedback(id)
     if err != nil {
         return nil, err
@@ -59,10 +59,10 @@ func (s *FeedbackService) UpdateFeedback(id uint, feedbackData *models.Feedback)
     return existingFeedback, nil
 }
 
-func (s *FeedbackService) GetFeedbackForSubmission(submissionID uint) (*models.Feedback, error) {
+func (s *FeedbackService) GetFeedbackForSubmission(submissionID uuid.UUID) (*models.Feedback, error) {
     return s.FeedbackRepository.GetFeedbackForSubmission(submissionID)
 }
 
-func (s *FeedbackService) DeleteFeedback(id uint) error {
+func (s *FeedbackService) DeleteFeedback(id uuid.UUID) error {
 	return s.FeedbackRepository.DeleteFeedback(id)
 }

@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"net/http"
-	"strconv"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/markmumba/project-tracker/helpers"
 	"github.com/markmumba/project-tracker/models"
@@ -44,20 +44,20 @@ func (fc *FeedbackController) GetFeedbackByStudent(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	feedback, err := fc.feedbackService.GetFeedbackByStudent(uint(userID))
+	feedback, err := fc.feedbackService.GetFeedbackByStudent(userID)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, err.Error())
 	}
 
 	return c.JSON(http.StatusOK, models.FeedbackToDTOs(*feedback))
 }
-func (fc *FeedbackController) GetFeedbackByLecturer (c echo.Context)error {
+func (fc *FeedbackController) GetFeedbackByLecturer(c echo.Context) error {
 
 	userID, err := helpers.ConvertUserID(c, "userId")
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	feedback, err := fc.feedbackService.GetFeedbackByLecturer(uint(userID))
+	feedback, err := fc.feedbackService.GetFeedbackByLecturer(userID)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, err.Error())
 	}
@@ -75,33 +75,33 @@ func (fc *FeedbackController) GetAllFeedback(c echo.Context) error {
 }
 
 func (fc *FeedbackController) UpdateFeedback(c echo.Context) error {
-    id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-    if err != nil {
-        return c.JSON(http.StatusBadRequest, "Invalid feedback ID")
-    }
+	idParam := c.Param("id")
+	id, err := uuid.Parse(idParam)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, "Invalid feedback ID")
+	}
 
-    var feedbackData models.Feedback
-    if err := c.Bind(&feedbackData); err != nil {
-        return c.JSON(http.StatusBadRequest, "Invalid request body")
-    }
+	var feedbackData models.Feedback
+	if err := c.Bind(&feedbackData); err != nil {
+		return c.JSON(http.StatusBadRequest, "Invalid request body")
+	}
 
-    updatedFeedback, err := fc.feedbackService.UpdateFeedback(uint(id), &feedbackData)
-    if err != nil {
-        return c.JSON(http.StatusInternalServerError, "Failed to update feedback")
-    }
+	updatedFeedback, err := fc.feedbackService.UpdateFeedback(id, &feedbackData)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "Failed to update feedback")
+	}
 
-    return c.JSON(http.StatusOK, updatedFeedback)
+	return c.JSON(http.StatusOK, updatedFeedback)
 }
 
-
-
 func (fc *FeedbackController) GetFeedbackForSubmission(c echo.Context) error {
-	submissionID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	idParam := c.Param("id")
+	submissionID, err := uuid.Parse(idParam)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, "Invalid submission ID")
 	}
 
-	feedback, err := fc.feedbackService.GetFeedbackForSubmission(uint(submissionID))
+	feedback, err := fc.feedbackService.GetFeedbackForSubmission(submissionID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -120,7 +120,7 @@ func (fc *FeedbackController) DeleteFeedback(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 	id := feedbackParams.ID
-	err = fc.feedbackService.DeleteFeedback(uint(id))
+	err = fc.feedbackService.DeleteFeedback(id)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, err.Error())
 	}

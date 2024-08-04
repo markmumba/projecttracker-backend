@@ -89,7 +89,7 @@ func (pc *ProjectController) DeleteProject(c echo.Context) error {
 	}
 
 	id := projectParams.ID
-	if err := pc.projectService.DeleteProject(uint(id)); err != nil {
+	if err := pc.projectService.DeleteProject(id); err != nil {
 		return c.JSON(http.StatusNotFound, err.Error())
 	}
 

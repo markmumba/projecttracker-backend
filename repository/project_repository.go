@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/google/uuid"
 	"github.com/markmumba/project-tracker/database"
 	"github.com/markmumba/project-tracker/models"
 )
@@ -16,7 +17,7 @@ func (r *ProjectRepositoryImpl) CreateProject(project *models.Project) error {
 	return result.Error
 }
 
-func (r *ProjectRepositoryImpl) GetProject(id uint) (*models.Project, error) {
+func (r *ProjectRepositoryImpl) GetProject(id uuid.UUID) (*models.Project, error) {
 	var project models.Project
 	result := database.DB.
 		Preload("Lecturer.Role").
@@ -26,7 +27,7 @@ func (r *ProjectRepositoryImpl) GetProject(id uint) (*models.Project, error) {
 	return &project, result.Error
 }
 
-func (r *ProjectRepositoryImpl) GetProjectsByLecturerId(lecturerId uint) ([]models.Project, error) {
+func (r *ProjectRepositoryImpl) GetProjectsByLecturerId(lecturerId uuid.UUID) ([]models.Project, error) {
 	var projects []models.Project
 	result := database.DB.Where("lecturer_id = ?", lecturerId).Find(&projects)
 	return projects, result.Error
@@ -37,7 +38,7 @@ func (r *ProjectRepositoryImpl) UpdateProject(project *models.Project) error {
 	return result.Error
 }
 
-func (r *ProjectRepositoryImpl) DeleteProject(id uint) error {
+func (r *ProjectRepositoryImpl) DeleteProject(id uuid.UUID) error {
 	var project models.Project
 	result := database.DB.Delete(&project, id)
 	return result.Error
