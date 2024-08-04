@@ -3,15 +3,15 @@ package models
 import "github.com/google/uuid"
 
 type Submission struct {
-	ID             uuid.UUID  `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
-	Description    string     `gorm:"not null" json:"description"`
-	SubmissionDate string     `json:"submission_date"`
-	DocumentPath   string     `gorm:"not null" json:"document_path"`
-	Reviewed       bool       `gorm:"default:false" json:"reviewed"`
-	ProjectID      uuid.UUIDs `gorm:"not null" json:"project_id"`
-	StudentID      uuid.UUIDs `gorm:"not null" json:"student_id"`
-	Project        Project    `gorm:"foreignKey:ProjectID"`
-	Student        User       `gorm:"foreignKey:StudentID"`
+	ID             uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	Description    string    `gorm:"not null" json:"description"`
+	SubmissionDate string    `json:"submission_date"`
+	DocumentPath   string    `gorm:"not null" json:"document_path"`
+	Reviewed       bool      `gorm:"default:false" json:"reviewed"`
+	ProjectID      uuid.UUID `gorm:"type:uuid;not null" json:"project_id"`
+	StudentID      uuid.UUID `gorm:"type:uuid;not null" json:"student_id"`
+	Project        Project   `gorm:"foreignKey:ProjectID"`
+	Student        User      `gorm:"foreignKey:StudentID"`
 }
 
 type SubmissionDTO struct {

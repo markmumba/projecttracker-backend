@@ -3,13 +3,13 @@ package models
 import "github.com/google/uuid"
 
 type Project struct {
-	ID             uuid.UUID  `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	ID          uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
 	Title       string    `gorm:"not null" json:"title"`
 	Description string    `gorm:"not null" json:"description"`
 	StartDate   string    `json:"start_date"`
 	EndDate     string    `json:"end_date"`
-	StudentID   uuid.UUID `gorm:"not null" json:"student_id"`
-	LecturerID  uuid.UUID `gorm:"not null" json:"lecturer_id"`
+	StudentID   uuid.UUID `gorm:"type:uuid;not null" json:"student_id"`
+	LecturerID  uuid.UUID `gorm:"type:uuid;not null" json:"lecturer_id"`
 	Student     User      `gorm:"foreignKey:StudentID"`
 	Lecturer    User      `gorm:"foreignKey:LecturerID"`
 }
