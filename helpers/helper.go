@@ -7,7 +7,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-
 func ConvertUserID(c echo.Context, key string) (uuid.UUID, error) {
     userIDInterface := c.Get(key)
     switch id := userIDInterface.(type) {
@@ -18,7 +17,10 @@ func ConvertUserID(c echo.Context, key string) (uuid.UUID, error) {
             return uuid.Nil, fmt.Errorf("invalid UUID format: %v", err)
         }
         return userID, nil
+    case uuid.UUID:
+        // If it's already a UUID, return it directly
+        return id, nil
     default:
-        return uuid.Nil, fmt.Errorf("invalid user ID type, expected string")
+        return uuid.Nil, fmt.Errorf("invalid user ID type, expected string or uuid.UUID")
     }
 }

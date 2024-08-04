@@ -128,11 +128,6 @@ func (uc *UserController) Logout(c echo.Context) error {
 	return c.JSON(http.StatusOK, "Logged out successfully")
 }
 
-
-
-
-
-
 func (uc *UserController) CreateUser(c echo.Context) error {
 	var user models.User
 	if err := c.Bind(&user); err != nil {
@@ -152,6 +147,7 @@ func (uc *UserController) CreateUser(c echo.Context) error {
 
 func (uc *UserController) GetUser(c echo.Context) error {
 	userID, err := helpers.ConvertUserID(c, "userId")
+	
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -200,7 +196,7 @@ func (uc *UserController) UpdateUser(c echo.Context) error {
 	if err := c.Bind(&updateUser); err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
-	fmt.Printf("this is the data from the user %v",updateUser)
+	fmt.Printf("this is the data from the user %v", updateUser)
 
 	if err := uc.UserService.UpdateUser(userID, &updateUser); err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
