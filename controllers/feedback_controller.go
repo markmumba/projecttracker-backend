@@ -10,7 +10,6 @@ import (
 	"github.com/markmumba/project-tracker/services"
 )
 
-// TODO : get the latest feedback for the student
 
 type FeedbackController struct {
 	feedbackService *services.FeedbackService

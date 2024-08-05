@@ -46,10 +46,10 @@ func SetupRouter(
 	e.POST("/login", userController.Login)
 	e.GET("/logout", userController.Logout)
 	e.GET("/ws", websocketController.HandleWebSocket)
+	e.GET("/refresh-token", userController.Refresh)
 
 	r := e.Group("")
 	r.Use(custommiddleware.Authentication)
-	r.GET("/refresh-token", userController.Refresh)
 
 	userGroup := r.Group("/users")
 	{

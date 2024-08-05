@@ -10,8 +10,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// TODO : change to uint and see what happens
-// TODO : update not working password is wor
 
 var (
 	accessTokenSecret  = []byte(os.Getenv("ACCESS_TOKEN_SECRET"))
@@ -24,7 +22,7 @@ type JwtCustomClaims struct {
 }
 
 func HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 10)
 	return string(bytes), err
 }
 
