@@ -1,7 +1,6 @@
 package custommiddleware
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -28,8 +27,7 @@ func Authentication(next echo.HandlerFunc) echo.HandlerFunc {
 			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "invalid or expired access token"})
 		}
 
-		// Set the user ID in the context for use in subsequent handlers
-    fmt.Println()
+		// S.Println()
 		c.Set("userId", claims.UserId)
 
 		return next(c)
